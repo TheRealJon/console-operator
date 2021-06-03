@@ -22,6 +22,7 @@ import (
 	operatorv1 "github.com/openshift/api/operator/v1"
 	routev1 "github.com/openshift/api/route/v1"
 	"github.com/openshift/console-operator/pkg/api"
+	"github.com/openshift/console-operator/pkg/console/subresource/consoleserver"
 	"github.com/openshift/console-operator/pkg/console/subresource/util"
 	"github.com/openshift/console-operator/pkg/crypto"
 	"github.com/openshift/library-go/pkg/controller/factory"
@@ -42,12 +43,15 @@ import (
 )
 
 type KubeConfig struct {
-	Clusters []struct {
-		Cluster struct {
-			CAData string `yaml:"certificate-authority-data"`
-			Server string `yaml:"server"`
-		} `yaml:"cluster"`
+	Clusters [] struct {
+		Cluster KubeConfigCluster `yaml:"cluster"`
+		Name    string `yaml:"name"`
 	} `yaml:"clusters"`
+}
+
+type KubeConfigCluster struct {
+	CAData string `yaml:"certificate-authority-data"`
+	Server string `yaml:"server"`
 }
 
 // The sync loop starts from zero and works its way through the requirements for a running console.
@@ -352,13 +356,13 @@ func (co *consoleOperator) SyncConfigMap(
 	}
 
 	pluginsEndpointMap := co.GetPluginsEndpointMap(operatorConfig.Spec.Plugins)
-	managedClusterEndpointsMap := co.GetMangagedClusterEndpointsMap(ctx)
+	managedClusterConfigs := co.GetMangagedClusterConfigs(ctx)
 	monitoringSharedConfig, mscErr := co.configMapClient.ConfigMaps(api.OpenShiftConfigManagedNamespace).Get(ctx, api.OpenShiftMonitoringConfigMapName, metav1.GetOptions{})
 	if mscErr != nil && !apierrors.IsNotFound(mscErr) {
 		return nil, false, "FailedGetMonitoringSharedConfig", mscErr
 	}
 
-	defaultConfigmap, _, err := configmapsub.DefaultConfigMap(operatorConfig, consoleConfig, managedConfig, monitoringSharedConfig, infrastructureConfig, activeConsoleRoute, useDefaultCAFile, inactivityTimeoutSeconds, pluginsEndpointMap, managedClusterEndpointsMap)
+	defaultConfigmap, _, err := configmapsub.DefaultConfigMap(operatorConfig, consoleConfig, managedConfig, monitoringSharedConfig, infrastructureConfig, activeConsoleRoute, useDefaultCAFile, inactivityTimeoutSeconds, pluginsEndpointMap, managedClusterConfigs)
 	if err != nil {
 		return nil, false, "FailedConsoleConfigBuilder", err
 	}
@@ -540,35 +544,47 @@ func getServiceHostname(plugin *v1alpha1.ConsolePlugin) string {
 	return pluginURL.String()
 }
 
-func (co *consoleOperator) GetMangagedClusterEndpointsMap(ctx context.Context) map[string]string {
+func (co *consoleOperator) GetMangagedClusterConfigs(ctx context.Context) []*consoleserver.ManagedClusterConfig {
 	managedClusterNamespaces, err := co.namespacesClient.Namespaces().List(ctx, metav1.ListOptions{ LabelSelector: "cluster.open-cluster-management.io/managedCluster"})
 	if err != nil {
 		klog.Errorf("Failed to list managed cluster namespaces: %v", err)
 	}
-	managedClusterMap := map[string]string{}
+	managedClusterConfigList := []*consoleserver.ManagedClusterConfig{}
 	for _, namespace := range managedClusterNamespaces.Items {
 		managedClusterName := namespace.GetName()
 		klog.V(4).Infoln(fmt.Sprintf("Configuring managed cluster: %v", managedClusterName))
-		apiEndpoint := co.getAPIEndpointForManagedCluster(ctx, managedClusterName);
-		managedClusterMap[managedClusterName] = apiEndpoint
+		managedCluster := co.getManagedCluster(ctx, managedClusterName)
+		if managedCluster != nil {
+			managedClusterConfigList = append(managedClusterConfigList, managedCluster)
+		}
 	}
-	return managedClusterMap
+	klog.V(4).Infoln(fmt.Sprintf("managed cluster list: %v", managedClusterConfigList))
+	return managedClusterConfigList
 }
 
-func (co *consoleOperator) getAPIEndpointForManagedCluster(ctx context.Context, namespace string) string {
+func (co *consoleOperator) getManagedCluster(ctx context.Context, namespace string) *consoleserver.ManagedClusterConfig {
 	kubeConfigSecrets, err := co.secretsClient.Secrets(namespace).List(ctx, metav1.ListOptions{ LabelSelector: "hive.openshift.io/secret-type=kubeconfig"})
-	// If no kubeconfig secret or more than one kubeconfig secret, fail
 	if err != nil {
 		klog.Errorf("Error listing kubeconfig secrets for managed cluster %s: %v", namespace, err)
-		return ""
+		return nil
 	}
 
+	// If no kubeconfig secret or more than one kubeconfig secret, fail
 	if kubeConfigSecrets == nil || len(kubeConfigSecrets.Items) != 1 {
 		klog.Errorf("Could not find kubeconfig secret for managed cluster %s", namespace)
-		return ""
+		return nil
 	}
 
 	kubeConfig := KubeConfig{}
-	yaml.Unmarshal(kubeConfigSecrets.Items[0].Data["kubeconfig"], &kubeConfig)
-	return kubeConfig.Clusters[0].Cluster.Server;
+	err = yaml.Unmarshal(kubeConfigSecrets.Items[0].Data["kubeconfig"], &kubeConfig)
+	if err != nil {
+		klog.Errorf("Could not parse kubeconfig YAML %v", kubeConfigSecrets.Items[0].Data["kubeconfig"])
+		return nil
+	}
+
+	return &consoleserver.ManagedClusterConfig{
+		Name: namespace,
+		Server: kubeConfig.Clusters[0].Cluster.Server,
+		CAData: kubeConfig.Clusters[0].Cluster.CAData,
+	}
 }

@@ -11,16 +11,16 @@ package consoleserver
 
 // Config is the top-level console server cli configuration.
 type Config struct {
-	APIVersion      string `yaml:"apiVersion"`
-	Kind            string `yaml:"kind"`
-	ServingInfo     `yaml:"servingInfo"`
-	ClusterInfo     `yaml:"clusterInfo"`
-	Auth            `yaml:"auth"`
-	Customization   `yaml:"customization"`
-	Providers       `yaml:"providers"`
-	MonitoringInfo  `yaml:"monitoringInfo,omitempty"`
-	Plugins         map[string]string `yaml:"plugins,omitempty"`
-	ManagedClusters map[string]string `yaml:"managedClusters,omitempty"`
+	APIVersion            string `yaml:"apiVersion"`
+	Kind                  string `yaml:"kind"`
+	ServingInfo           `yaml:"servingInfo"`
+	ClusterInfo           `yaml:"clusterInfo"`
+	Auth                  `yaml:"auth"`
+	Customization         `yaml:"customization"`
+	Providers             `yaml:"providers"`
+	MonitoringInfo        `yaml:"monitoringInfo,omitempty"`
+	Plugins               map[string]string `yaml:"plugins,omitempty"`
+	ManagedClusterConfigs []*ManagedClusterConfig `yaml:"managedClusters,omitempty"`
 }
 
 // ServingInfo holds configuration for serving HTTP.
@@ -133,4 +133,10 @@ type HelmChartRepo struct {
 
 type Helm struct {
 	ChartRepo HelmChartRepo `yaml:"chartRepository"`
+}
+
+type ManagedClusterConfig struct {
+	Name   string `yaml:"name"`
+	Server string `yaml:"server"`
+	CAData string `yaml:"caData"`
 }

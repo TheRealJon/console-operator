@@ -48,7 +48,7 @@ type ConsoleServerCLIConfigBuilder struct {
 	customHostnameRedirectPort int
 	inactivityTimeoutSeconds   int
 	pluginsList                map[string]string
-	managedClusterList         map[string]string
+	managedClusterConfigs            []*ManagedClusterConfig
 }
 
 func (b *ConsoleServerCLIConfigBuilder) Host(host string) *ConsoleServerCLIConfigBuilder {
@@ -137,23 +137,23 @@ func (b *ConsoleServerCLIConfigBuilder) Plugins(plugins map[string]string) *Cons
 	return b
 }
 
-func (b *ConsoleServerCLIConfigBuilder) ManagedClusters(managedClusters map[string]string) *ConsoleServerCLIConfigBuilder {
-	b.managedClusterList = managedClusters
+func (b *ConsoleServerCLIConfigBuilder) ManagedClusters(managedClusterConfigs []*ManagedClusterConfig) *ConsoleServerCLIConfigBuilder {
+	b.managedClusterConfigs = managedClusterConfigs
 	return b
 }
 
 func (b *ConsoleServerCLIConfigBuilder) Config() Config {
 	return Config{
-		Kind:           "ConsoleConfig",
-		APIVersion:     "console.openshift.io/v1",
-		Auth:           b.auth(),
-		ClusterInfo:    b.clusterInfo(),
-		Customization:  b.customization(),
-		ServingInfo:    b.servingInfo(),
-		Providers:      b.providers(),
-		MonitoringInfo: b.monitoringInfo(),
-		Plugins:        b.plugins(),
-		ManagedClusters: b.managedClusters(),
+		Kind:                  "ConsoleConfig",
+		APIVersion:            "console.openshift.io/v1",
+		Auth:                  b.auth(),
+		ClusterInfo:           b.clusterInfo(),
+		Customization:         b.customization(),
+		ServingInfo:           b.servingInfo(),
+		Providers:             b.providers(),
+		MonitoringInfo:        b.monitoringInfo(),
+		Plugins:               b.plugins(),
+		ManagedClusterConfigs: b.getManagedClusterConfigs(),
 	}
 }
 
@@ -317,6 +317,6 @@ func (b *ConsoleServerCLIConfigBuilder) plugins() map[string]string {
 	return b.pluginsList
 }
 
-func (b *ConsoleServerCLIConfigBuilder) managedClusters() map[string]string {
-	return b.managedClusterList
+func (b *ConsoleServerCLIConfigBuilder) getManagedClusterConfigs() []*ManagedClusterConfig {
+	return b.managedClusterConfigs
 }

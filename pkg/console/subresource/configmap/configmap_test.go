@@ -16,6 +16,7 @@ import (
 	operatorv1 "github.com/openshift/api/operator/v1"
 	routev1 "github.com/openshift/api/route/v1"
 	"github.com/openshift/console-operator/pkg/api"
+	"github.com/openshift/console-operator/pkg/console/subresource/consoleserver"
 )
 
 const (
@@ -39,7 +40,7 @@ func TestDefaultConfigMap(t *testing.T) {
 		useDefaultCAFile         bool
 		inactivityTimeoutSeconds int
 		enabledPlugins           map[string]string
-		managedClusters          map[string]string
+		managedClusterConfigs          []*consoleserver.ManagedClusterConfig
 	}
 	tests := []struct {
 		name string
@@ -668,7 +669,7 @@ plugins:
 				tt.args.useDefaultCAFile,
 				tt.args.inactivityTimeoutSeconds,
 				tt.args.enabledPlugins,
-				tt.args.managedClusters,
+				tt.args.managedClusterConfigs,
 			)
 
 			// marshall the exampleYaml to map[string]interface{} so we can use it in diff below
