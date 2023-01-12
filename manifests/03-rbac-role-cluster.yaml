@@ -94,6 +94,25 @@ rules:
       - get
       - list
       - watch
+  - apiGroups:
+      - work.open-cluster-management.io
+    resources:
+      - manifestworks
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - delete
+  - apiGroups:
+      - work.open-cluster-management.io
+    resources:
+      - manifestworks
+    verbs:
+      - execute-as
+    resourcenames:
+      - system:serviceaccount:openshift-console-operator:console-operator-executor
 ---
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
@@ -202,4 +221,22 @@ rules:
       - create
       - watch
       - patch
+      - delete
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: console-operator-executor
+rules:
+  - apiGroups:
+      - oauth.openshift.io
+    resources:
+      - oauthclients
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - patch
+      - update
       - delete

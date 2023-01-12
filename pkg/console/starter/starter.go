@@ -21,6 +21,7 @@ import (
 	"github.com/openshift/api/oauth"
 	operatorv1 "github.com/openshift/api/operator"
 	"github.com/openshift/console-operator/pkg/api"
+	managedclusteroauthclientcontroller "github.com/openshift/console-operator/pkg/console/controllers/advancedclustermanagement/managedclusteroauthclients"
 	managedcluster "github.com/openshift/console-operator/pkg/console/controllers/advancedclustermanagement/managedclusters"
 	"github.com/openshift/console-operator/pkg/console/controllers/clidownloads"
 	"github.com/openshift/console-operator/pkg/console/controllers/downloadsdeployment"
@@ -54,8 +55,10 @@ import (
 	consolev1client "github.com/openshift/client-go/console/clientset/versioned"
 	consoleinformers "github.com/openshift/client-go/console/informers/externalversions"
 
-	clusterclient "github.com/open-cluster-management/api/client/cluster/clientset/versioned"
-	clusterinformers "github.com/open-cluster-management/api/client/cluster/informers/externalversions"
+	clusterclient "open-cluster-management.io/api/client/cluster/clientset/versioned"
+	clusterinformers "open-cluster-management.io/api/client/cluster/informers/externalversions"
+
+	workclient "open-cluster-management.io/api/client/work/clientset/versioned"
 
 	"github.com/openshift/console-operator/pkg/console/clientwrapper"
 	"github.com/openshift/console-operator/pkg/console/operator"
@@ -95,6 +98,11 @@ func RunOperator(ctx context.Context, controllerContext *controllercmd.Controlle
 	}
 
 	managedClusterClient, err := clusterclient.NewForConfig(controllerContext.KubeConfig)
+	if err != nil {
+		return err
+	}
+
+	manifestWorkClient, err := workclient.NewForConfig(controllerContext.KubeConfig)
 	if err != nil {
 		return err
 	}
@@ -335,6 +343,19 @@ func RunOperator(ctx context.Context, controllerContext *controllercmd.Controlle
 		recorder,
 	)
 
+	managedClusterOauthClientController := managedclusteroauthclientcontroller.New(
+		configClient.ConfigV1(),
+		configInformers,
+		operatorClient,
+		operatorConfigClient.OperatorV1().Consoles(),
+		kubeClient.CoreV1(),
+		managedClusterClient.ClusterV1(),
+		oauthClient.OauthV1(),
+		manifestWorkClient.WorkV1(),
+		operatorConfigInformers.Operator().V1().Consoles(),
+		recorder,
+	)
+
 	managedClusterController := managedcluster.NewManagedClusterController(
 		// top level config
 		configClient.ConfigV1(),
@@ -347,6 +368,7 @@ func RunOperator(ctx context.Context, controllerContext *controllercmd.Controlle
 		dynamicClient,
 		kubeClient.CoreV1(),
 		oauthClient.OauthV1(),
+		manifestWorkClient.WorkV1(),
 		// informers
 		operatorConfigInformers.Operator().V1().Consoles(),
 		managedClusterInformers.Cluster().V1().ManagedClusters(),
@@ -477,6 +499,7 @@ func RunOperator(ctx context.Context, controllerContext *controllercmd.Controlle
 		consoleRouteController,
 		downloadsServiceController,
 		downloadsRouteController,
+		managedClusterOauthClientController,
 		managedClusterController,
 		consoleOperator,
 		cliDownloadsController,

@@ -1,0 +1,7 @@
+kind: OAuthClient
+apiVersion: oauth.openshift.io/v1
+metadata:
+  name: console-managed-cluster-oauth-client
+  labels:
+    app: console
+    managed-cluster: ""

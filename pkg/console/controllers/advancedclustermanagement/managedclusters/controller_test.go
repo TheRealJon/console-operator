@@ -4,9 +4,10 @@ import (
 	"testing"
 
 	"github.com/go-test/deep"
+	"github.com/openshift/console-operator/pkg/console/controllers/util"
 
-	v1 "github.com/open-cluster-management/api/cluster/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	v1 "open-cluster-management.io/api/cluster/v1"
 )
 
 func generateClusters(t *testing.T) []v1.ManagedCluster {
@@ -66,7 +67,7 @@ func TestProductAndVersionCheckForClusterList(t *testing.T) {
 	}
 	for _, managedCluster := range clusters {
 		clusterName := managedCluster.GetName()
-		validProduct, validVersion := isSupportedCluster(managedCluster.Status.ClusterClaims)
+		validProduct, validVersion := util.IsSupportedMangedCluster(managedCluster)
 		if !validProduct {
 			t.Logf("Skipping managed cluster %q, product is unsupported", clusterName)
 			continue
