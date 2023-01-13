@@ -4,11 +4,10 @@
 // bindata/configmaps/console-public-configmap.yaml
 // bindata/deployments/console-deployment.yaml
 // bindata/deployments/downloads-deployment.yaml
-// bindata/managedclusteractions/console-create-oauth-client.yaml
-// bindata/managedclusterviews/console-oauth-client.yaml
 // bindata/managedclusterviews/console-oauth-server-cert.yaml
 // bindata/managedclusterviews/olm-config.yaml
 // bindata/managedserviceproxyresolvers/thanos-querier.yaml
+// bindata/oauth/console-managed-cluster-oauth-client.yaml
 // bindata/pdb/console-pdb.yaml
 // bindata/pdb/downloads-pdb.yaml
 // bindata/routes/console-custom-route.yaml
@@ -438,57 +437,6 @@ func deploymentsDownloadsDeploymentYaml() (*asset, error) {
 	return a, nil
 }
 
-var _managedclusteractionsConsoleCreateOauthClientYaml = []byte(`apiVersion: action.open-cluster-management.io/v1beta1
-kind: ManagedClusterAction
-spec:
-  actionType: Create
-  kube:
-    resource: OAuthClient
-    template:
-      apiVersion: oauth.openshift.io/v1
-      kind: OAuthClient
-      grantMethod: auto
-`)
-
-func managedclusteractionsConsoleCreateOauthClientYamlBytes() ([]byte, error) {
-	return _managedclusteractionsConsoleCreateOauthClientYaml, nil
-}
-
-func managedclusteractionsConsoleCreateOauthClientYaml() (*asset, error) {
-	bytes, err := managedclusteractionsConsoleCreateOauthClientYamlBytes()
-	if err != nil {
-		return nil, err
-	}
-
-	info := bindataFileInfo{name: "managedclusteractions/console-create-oauth-client.yaml", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
-	a := &asset{bytes: bytes, info: info}
-	return a, nil
-}
-
-var _managedclusterviewsConsoleOauthClientYaml = []byte(`apiVersion: view.open-cluster-management.io/v1beta1
-kind: ManagedClusterView
-spec:
-  scope:
-    apiVersion: oauth.openshift.io/v1
-    resource: OAuthClient
-    name: console-managed-cluster-oauth-client
-`)
-
-func managedclusterviewsConsoleOauthClientYamlBytes() ([]byte, error) {
-	return _managedclusterviewsConsoleOauthClientYaml, nil
-}
-
-func managedclusterviewsConsoleOauthClientYaml() (*asset, error) {
-	bytes, err := managedclusterviewsConsoleOauthClientYamlBytes()
-	if err != nil {
-		return nil, err
-	}
-
-	info := bindataFileInfo{name: "managedclusterviews/console-oauth-client.yaml", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
-	a := &asset{bytes: bytes, info: info}
-	return a, nil
-}
-
 var _managedclusterviewsConsoleOauthServerCertYaml = []byte(`apiVersion: view.open-cluster-management.io/v1beta1
 kind: ManagedClusterView
 spec:
@@ -567,6 +515,30 @@ func managedserviceproxyresolversThanosQuerierYaml() (*asset, error) {
 	}
 
 	info := bindataFileInfo{name: "managedserviceproxyresolvers/thanos-querier.yaml", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
+	a := &asset{bytes: bytes, info: info}
+	return a, nil
+}
+
+var _oauthConsoleManagedClusterOauthClientYaml = []byte(`kind: OAuthClient
+apiVersion: oauth.openshift.io/v1
+metadata:
+  name: console-managed-cluster-oauth-client
+  labels:
+    app: console
+    managed-cluster: ""
+`)
+
+func oauthConsoleManagedClusterOauthClientYamlBytes() ([]byte, error) {
+	return _oauthConsoleManagedClusterOauthClientYaml, nil
+}
+
+func oauthConsoleManagedClusterOauthClientYaml() (*asset, error) {
+	bytes, err := oauthConsoleManagedClusterOauthClientYamlBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "oauth/console-managed-cluster-oauth-client.yaml", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -980,36 +952,37 @@ func AssetNames() []string {
 
 // _bindata is a table, holding each asset generator, mapped to its name.
 var _bindata = map[string]func() (*asset, error){
-	"configmaps/console-configmap.yaml":                      configmapsConsoleConfigmapYaml,
-	"configmaps/console-public-configmap.yaml":               configmapsConsolePublicConfigmapYaml,
-	"deployments/console-deployment.yaml":                    deploymentsConsoleDeploymentYaml,
-	"deployments/downloads-deployment.yaml":                  deploymentsDownloadsDeploymentYaml,
-	"managedclusteractions/console-create-oauth-client.yaml": managedclusteractionsConsoleCreateOauthClientYaml,
-	"managedclusterviews/console-oauth-client.yaml":          managedclusterviewsConsoleOauthClientYaml,
-	"managedclusterviews/console-oauth-server-cert.yaml":     managedclusterviewsConsoleOauthServerCertYaml,
-	"managedclusterviews/olm-config.yaml":                    managedclusterviewsOlmConfigYaml,
-	"managedserviceproxyresolvers/thanos-querier.yaml":       managedserviceproxyresolversThanosQuerierYaml,
-	"pdb/console-pdb.yaml":                                   pdbConsolePdbYaml,
-	"pdb/downloads-pdb.yaml":                                 pdbDownloadsPdbYaml,
-	"routes/console-custom-route.yaml":                       routesConsoleCustomRouteYaml,
-	"routes/console-redirect-route.yaml":                     routesConsoleRedirectRouteYaml,
-	"routes/console-route.yaml":                              routesConsoleRouteYaml,
-	"routes/downloads-custom-route.yaml":                     routesDownloadsCustomRouteYaml,
-	"routes/downloads-route.yaml":                            routesDownloadsRouteYaml,
-	"services/console-redirect-service.yaml":                 servicesConsoleRedirectServiceYaml,
-	"services/console-service.yaml":                          servicesConsoleServiceYaml,
-	"services/downloads-service.yaml":                        servicesDownloadsServiceYaml,
+	"configmaps/console-configmap.yaml":                  configmapsConsoleConfigmapYaml,
+	"configmaps/console-public-configmap.yaml":           configmapsConsolePublicConfigmapYaml,
+	"deployments/console-deployment.yaml":                deploymentsConsoleDeploymentYaml,
+	"deployments/downloads-deployment.yaml":              deploymentsDownloadsDeploymentYaml,
+	"managedclusterviews/console-oauth-server-cert.yaml": managedclusterviewsConsoleOauthServerCertYaml,
+	"managedclusterviews/olm-config.yaml":                managedclusterviewsOlmConfigYaml,
+	"managedserviceproxyresolvers/thanos-querier.yaml":   managedserviceproxyresolversThanosQuerierYaml,
+	"oauth/console-managed-cluster-oauth-client.yaml":    oauthConsoleManagedClusterOauthClientYaml,
+	"pdb/console-pdb.yaml":                               pdbConsolePdbYaml,
+	"pdb/downloads-pdb.yaml":                             pdbDownloadsPdbYaml,
+	"routes/console-custom-route.yaml":                   routesConsoleCustomRouteYaml,
+	"routes/console-redirect-route.yaml":                 routesConsoleRedirectRouteYaml,
+	"routes/console-route.yaml":                          routesConsoleRouteYaml,
+	"routes/downloads-custom-route.yaml":                 routesDownloadsCustomRouteYaml,
+	"routes/downloads-route.yaml":                        routesDownloadsRouteYaml,
+	"services/console-redirect-service.yaml":             servicesConsoleRedirectServiceYaml,
+	"services/console-service.yaml":                      servicesConsoleServiceYaml,
+	"services/downloads-service.yaml":                    servicesDownloadsServiceYaml,
 }
 
 // AssetDir returns the file names below a certain
 // directory embedded in the file by go-bindata.
 // For example if you run go-bindata on data/... and data contains the
 // following hierarchy:
-//     data/
-//       foo.txt
-//       img/
-//         a.png
-//         b.png
+//
+//	data/
+//	  foo.txt
+//	  img/
+//	    a.png
+//	    b.png
+//
 // then AssetDir("data") would return []string{"foo.txt", "img"}
 // AssetDir("data/img") would return []string{"a.png", "b.png"}
 // AssetDir("foo.txt") and AssetDir("notexist") would return an error
@@ -1050,16 +1023,15 @@ var _bintree = &bintree{nil, map[string]*bintree{
 		"console-deployment.yaml":   {deploymentsConsoleDeploymentYaml, map[string]*bintree{}},
 		"downloads-deployment.yaml": {deploymentsDownloadsDeploymentYaml, map[string]*bintree{}},
 	}},
-	"managedclusteractions": {nil, map[string]*bintree{
-		"console-create-oauth-client.yaml": {managedclusteractionsConsoleCreateOauthClientYaml, map[string]*bintree{}},
-	}},
 	"managedclusterviews": {nil, map[string]*bintree{
-		"console-oauth-client.yaml":      {managedclusterviewsConsoleOauthClientYaml, map[string]*bintree{}},
 		"console-oauth-server-cert.yaml": {managedclusterviewsConsoleOauthServerCertYaml, map[string]*bintree{}},
 		"olm-config.yaml":                {managedclusterviewsOlmConfigYaml, map[string]*bintree{}},
 	}},
 	"managedserviceproxyresolvers": {nil, map[string]*bintree{
 		"thanos-querier.yaml": {managedserviceproxyresolversThanosQuerierYaml, map[string]*bintree{}},
+	}},
+	"oauth": {nil, map[string]*bintree{
+		"console-managed-cluster-oauth-client.yaml": {oauthConsoleManagedClusterOauthClientYaml, map[string]*bintree{}},
 	}},
 	"pdb": {nil, map[string]*bintree{
 		"console-pdb.yaml":   {pdbConsolePdbYaml, map[string]*bintree{}},
