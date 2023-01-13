@@ -7,6 +7,7 @@ import (
 	// kube
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	appsclientv1 "k8s.io/client-go/kubernetes/typed/apps/v1"
@@ -244,6 +245,7 @@ func withConsoleContainerImage(deployment *appsv1.Deployment, operatorConfig *op
 	deployment.Spec.Template.Spec.Containers[0].Command = commands
 	deployment.Spec.Template.Spec.Containers[0].Env = setEnvironmentVariables(proxyConfig)
 	deployment.Spec.Template.Spec.Containers[0].Image = util.GetImageEnv("CONSOLE_IMAGE")
+	deployment.Spec.Template.Spec.Containers[0].ImagePullPolicy = v1.PullPolicy(util.GetImageEnv("CONSOLE_IMAGE_PULL_POLICY"))
 }
 
 func withConsoleNodeSelector(deployment *appsv1.Deployment, infrastructureConfig *configv1.Infrastructure) {
