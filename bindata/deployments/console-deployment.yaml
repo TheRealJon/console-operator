@@ -58,7 +58,7 @@ spec:
             allowPrivilegeEscalation: false
             capabilities:
               drop:
-              - ALL
+                - ALL
           command:
             - /opt/bridge/bin/bridge
             - "--public-dir=/opt/bridge/static"
@@ -78,7 +78,7 @@ spec:
             - name: https
               containerPort: 8443
               protocol: TCP
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: ${IMAGE_PULL_POLICY}
           terminationMessagePolicy: FallbackToLogsOnError
           image: ${IMAGE}
       tolerations:
