@@ -390,7 +390,6 @@ func RunOperator(ctx context.Context, controllerContext *controllercmd.Controlle
 
 	managedClusterController := managedcluster.NewManagedClusterController(
 		// top level config
-		configClient.ConfigV1(),
 		configInformers,
 
 		// clients
